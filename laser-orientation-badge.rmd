@@ -1,7 +1,7 @@
 ---
 title: "LASER Badge"
 subtitle: "LASER Institute Orientation"
-author: "YOUR NAME HERE"
+author: "Robert Talbert"
 date: "`r format(Sys.Date(),'%B %e, %Y')`"
 output:
   html_document:
@@ -157,9 +157,16 @@ What do you notice about this data set? What do you wonder? Add one-two
 thoughts following the dashes next (you can add additional dashes if you
 like!):
 
--   
+-   *Wonder*: What am I looking at here? What do the numbers mean?
 
--   
+-   *Wonder*: What questions were being asked in "q1" through "q10"?
+
+-   *Notice*: There are some wide variations in the "time spent"
+    variable.
+
+-   *Wonder*: Any connection between "time spent" and "FinalGradeCEMS"?
+    Also what's going on with "points possible", "points earned" and
+    "FinalGrade"?
 
 There are other ways to inspect your data; the `glimpse()` function
 provides one such way. Run the code below to take a glimpse at your
@@ -184,11 +191,14 @@ your area of work and/or research.
 
 What rows typically (or you think may) represent:
 
--   
+-   Rows typically represent individual responses to a survey, or
+    individual students.
 
 What columns typically (or you think may) represent:
 
--   
+-   Columns typically represent response values to a survey, or values
+    of a demographic variable, or a text response to an open-ended
+    survey question.
 
 Next, we'll use a few functions that are handy for preparing data in
 table form.
@@ -235,7 +245,7 @@ variable to this code.
 
 ```{r}
 d |> 
-  select(student_id, total_points_possible, total_points_earned)
+  select(student_id, total_points_possible, total_points_earned, TimeSpent, FinalGradeCEMS)
 ```
 
 Once added, the output should be different than in the code above -
@@ -261,13 +271,18 @@ play around with the code a bit!).
 
 ```{r}
 d |> 
-  filter(FinalGradeCEMS > 70)
+  filter(FinalGradeCEMS > 85)
 ```
 
 What happens when you change the cut-off from 70 to something else? Add
 a thought (or more):
 
--   
+-   The number of students with a final grade of 85 or higher is 279,
+    considerably less than the 438 for a 70.
+
+-   Seems like the range of courses is smaller - so those who had a
+    final grade of 85+ are coming from a small subset of the total range
+    of classes.
 
 ### Arrange
 
@@ -302,8 +317,8 @@ glimpsed at the names of all of the variables.
 
 ```{r}
 d |> 
-  select(student_id, FinalGradeCEMS) |> 
-  arrange(desc(FinalGradeCEMS))
+  select(student_id, TimeSpent_hours) |> 
+  arrange(desc(TimeSpent_hours))
 ```
 
 ### Reach 1 🎉
@@ -319,6 +334,14 @@ more in class, too!)*
 
 ```{r}
 
+# Question: If you just look at the students with a final grade over 85, 
+# how much time are they spending?
+# IDK what any of these variables mean though LOL
+
+d |> 
+  select(TimeSpent_hours, FinalGradeCEMS) |>
+  filter(FinalGradeCEMS > 85) |>
+  arrange(desc(TimeSpent_hours))
 ```
 
 ## 3. EXPLORE
@@ -357,7 +380,7 @@ consider this list of valid color names here:
 
 ```{r}
 ggplot(d, aes(x = FinalGradeCEMS)) +
-  geom_histogram(fill = "blue")
+  geom_histogram(fill = "cyan")
 ```
 
 Finally, we'll make one more change; visualize the distribution of
@@ -366,7 +389,7 @@ so by swapping out the name for another variable with FinalGradeCEMS.
 Also, change the color to one other than blue.
 
 ```{r}
-ggplot(d, aes(x = FinalGradeCEMS)) +
+ggplot(d, aes(x = TimeSpent_hours)) +
   geom_histogram(fill = "blue")
 ```
 
@@ -378,7 +401,12 @@ the names of two variables to the code below for what is now simply XXX
 (a placeholder).
 
 ```{r}
-ggplot(d, aes(x = XXX, y = XXX)) +
+
+# Question: Is there a correlation between low grades and time spent? 
+
+d |> 
+  filter(FinalGradeCEMS < 60) |>
+ggplot(aes(x = FinalGradeCEMS, y = TimeSpent_hours)) +
   geom_point()
 ```
 
@@ -412,7 +440,7 @@ results? We're going to dive into this *much* more: if you have many
 questions now, you're in the right spot!
 
 ```{r}
-m2 <- lm(FinalGradeCEMS ~ TimeSpent + subject, data = d)
+m2 <- lm(FinalGradeCEMS ~ TimeSpent + subject + int, data = d)
 summary(m2)
 ```
 
